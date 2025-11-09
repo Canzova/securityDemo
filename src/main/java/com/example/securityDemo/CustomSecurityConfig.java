@@ -1,5 +1,6 @@
 package com.example.securityDemo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,7 +11,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.sql.DataSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -18,15 +22,27 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class CustomSecurityConfig {
+
+    // Spring boot will have a dataSource for us automatically because in application.properties we have configured h2 db.
+    // So Spring knows we are using h2 db and it will automatically create a datasource for us
+
+    @Autowired
+    DataSource dataSource;
+
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+        http.authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/h2-console/**").permitAll()
+                .anyRequest().authenticated());
 
         // Marking the session as stateless
         http.sessionManagement(session->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         //        http.formLogin(withDefaults());
         http.httpBasic(withDefaults());
+        http.headers(headers->
+                headers.frameOptions(frameOptions->frameOptions.sameOrigin()));
+        http.csrf(csrf->csrf.disable());
         return http.build();
     }
 
@@ -42,6 +58,14 @@ public class CustomSecurityConfig {
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(user1, admin);
+        // Creating user in db
+        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+
+        userDetailsManager.createUser(user1);
+        userDetailsManager.createUser(admin);
+
+        return userDetailsManager;
+
+        //return new InMemoryUserDetailsManager(user1, admin);
     }
 }
