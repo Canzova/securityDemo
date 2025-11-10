@@ -1,0 +1,101 @@
+═══════════════════════════════════════════════════════════════
+💡 WHAT IS A PARSER (SIMPLE DEFINITION)
+═══════════════════════════════════════════════════════════════
+
+A **parser** is something that **reads a piece of text**
+and **breaks it into understandable parts**
+so your program can use the information inside it.
+
+In short:
+🗣️ "Parser" = "Reader + Analyzer"
+
+═══════════════════════════════════════════════════════════════
+🧠 EASY REAL-LIFE EXAMPLE
+═══════════════════════════════════════════════════════════════
+
+Imagine you get a train ticket like this:
+---------------------------------------------------------------
+"Train: 123 | Name: John | Seat: 25A"
+---------------------------------------------------------------
+A *parser* would read that text and turn it into:
+---------------------------------------------------------------
+Train = 123
+Name  = John
+Seat  = 25A
+---------------------------------------------------------------
+Now your program can easily understand and use these details.
+
+═══════════════════════════════════════════════════════════════
+💻 IN JWT CONTEXT
+═══════════════════════════════════════════════════════════════
+
+A JWT token is just a long text string like this:
+---------------------------------------------------------------
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZSJ9.abc123
+---------------------------------------------------------------
+
+It has 3 parts (header, payload, signature):
+1️⃣ Header → tells which algorithm was used
+2️⃣ Payload → has data like username, expiry, etc.
+3️⃣ Signature → ensures token wasn’t changed
+
+To **read and verify** this token,
+we use a **parser** provided by the JWT library.
+
+═══════════════════════════════════════════════════════════════
+⚙️ WHY WE USE A PARSER
+═══════════════════════════════════════════════════════════════
+
+✅ To **read** the JWT token (which is just text)
+✅ To **verify** it using the secret key
+✅ To **extract** information like username, roles, expiry time
+
+Without a parser, the JWT token would just be
+a random unreadable string to your program.
+
+═══════════════════════════════════════════════════════════════
+📘 WHEN TO USE
+═══════════════════════════════════════════════════════════════
+
+Use a parser **whenever you receive a JWT token** (for example,
+in an API request) and you want to:
+
+- Check if it’s valid (not expired, not modified)
+- Read who it belongs to
+- Get information from its payload
+
+═══════════════════════════════════════════════════════════════
+🔣 SYNTAX (USING JJWT LIBRARY)
+═══════════════════════════════════════════════════════════════
+
+Example:
+---------------------------------------------------------------
+String username = Jwts.parser()
+    .verifyWith(key())             // secret key to check signature
+    .build()                       // prepare parser
+    .parseSignedClaims(token)      // read & verify the token
+    .getPayload()                  // get data inside the token
+    .getSubject();                 // get "sub" = username
+---------------------------------------------------------------
+
+Step-by-step meaning:
+1️⃣ `parser()` – Start the token reader.
+2️⃣ `verifyWith(key())` – Tell it what secret to use for checking.
+3️⃣ `build()` – Finalize the parser setup.
+4️⃣ `parseSignedClaims(token)` – Read and verify the token.
+5️⃣ `getPayload()` – Get the data (the inside info).
+6️⃣ `getSubject()` – Extract the username (the "sub" field).
+
+═══════════════════════════════════════════════════════════════
+🏁 IN SIMPLE WORDS
+═══════════════════════════════════════════════════════════════
+🧩 A parser is like a “token reader machine.”
+You give it your JWT token, it:
+- Checks if it’s real (using your secret key)
+- Opens it safely
+- Gives you back useful info like username or expiry date
+
+✅ Without a parser → you just have a random unreadable string
+✅ With a parser → you get verified, easy-to-use data
+
+═══════════════════════════════════════════════════════════════

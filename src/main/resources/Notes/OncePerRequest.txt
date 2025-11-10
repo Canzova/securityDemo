@@ -1,0 +1,62 @@
+═══════════════════════════════════════════════════════════════
+💡 WHAT HAPPENS WHEN YOU EXTEND `OncePerRequestFilter`
+═══════════════════════════════════════════════════════════════
+
+🧠 SIMPLE DEFINITION
+---------------------------------------------------------------
+When your class **extends `OncePerRequestFilter`**,
+it becomes a **custom security filter** that runs **once for every HTTP request**.
+
+═══════════════════════════════════════════════════════════════
+⚙️ EXPLANATION IN SIMPLE WORDS
+---------------------------------------------------------------
+Normally, Spring Security uses a chain of filters to handle:
+- Authentication (login)
+- Authorization (permissions)
+- JWT checking
+- Other security tasks
+
+By extending `OncePerRequestFilter`,
+you create **your own filter** and add it into that chain.
+
+This filter can perform any task you want before the request reaches your controller.
+
+═══════════════════════════════════════════════════════════════
+🔁 MEANING OF “ONCE PER REQUEST”
+---------------------------------------------------------------
+✅ It means your filter runs **exactly one time** for each request.
+If your app receives 3 separate API calls, your filter will run 3 times
+— once for each request — and not more than that.
+
+This avoids unnecessary repetition when the same request is forwarded internally.
+
+═══════════════════════════════════════════════════════════════
+---------------------------------------------------------------
+
+Here’s what happens:
+1️⃣ Runs before your controller gets the request
+2️⃣ Checks if a JWT token is present and valid
+3️⃣ Authenticates the user if valid
+4️⃣ Passes the request forward to the next filter or controller
+
+═══════════════════════════════════════════════════════════════
+🧠 REAL-LIFE COMPARISON
+---------------------------------------------------------------
+Think of it like a **security checkpoint** at a building’s entrance 🚪
+- Every visitor (request) must pass through it
+- The guard (filter) checks their ID (JWT token)
+- If valid ✅ → they’re allowed in
+- It happens once per visitor — not multiple times
+
+═══════════════════════════════════════════════════════════════
+🏁 SIMPLE SUMMARY
+---------------------------------------------------------------
+✅ `OncePerRequestFilter` = runs once per incoming HTTP request
+✅ Used to create custom security filters
+✅ Perfect for JWT validation, logging, or custom checks
+
+👉 In short:
+> Extending `OncePerRequestFilter` lets you create a
+> **custom security checkpoint** that runs once for every request 🔐
+
+═══════════════════════════════════════════════════════════════

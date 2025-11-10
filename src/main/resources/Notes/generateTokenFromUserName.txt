@@ -1,0 +1,131 @@
+═══════════════════════════════════════════════════════════════
+💡 METHOD: generateTokenFromUserName()
+═══════════════════════════════════════════════════════════════
+
+This method:
+---------------------------------------------------------------
+public String generateTokenFromUserName(UserDetails userDetails)
+---------------------------------------------------------------
+➡ Creates (generates) a JWT token for the given user.
+That token will later be used for authentication.
+
+═══════════════════════════════════════════════════════════════
+🧩 LINE-BY-LINE EXPLANATION
+═══════════════════════════════════════════════════════════════
+
+1️⃣ Get the username
+---------------------------------------------------------------
+String userName = userDetails.getUsername();
+---------------------------------------------------------------
+- Extracts the username from the user details.
+- Example: "john".
+
+2️⃣ Start building the token
+---------------------------------------------------------------
+Jwts.builder()
+---------------------------------------------------------------
+- Starts creating a new JWT token.
+
+3️⃣ Add the subject
+---------------------------------------------------------------
+.subject(userName)
+---------------------------------------------------------------
+- "Subject" means: who this token belongs to (usually username).
+
+4️⃣ Set the issue time
+---------------------------------------------------------------
+.issuedAt(new Date())
+---------------------------------------------------------------
+- Says when the token was created (current time).
+
+5️⃣ Set the expiration time
+---------------------------------------------------------------
+.expiration(new Date((new Date().getTime() + jwtExpirationMs)))
+---------------------------------------------------------------
+- Tells when the token will expire.
+- `new Date().getTime()` → current time in milliseconds.
+- `jwtExpirationMs` → how long token stays valid.
+- Add them → future time = expiration.
+- Wrap in `new Date()` → turns number into a Date object.
+
+Example:
+If now = 2:00 PM and valid for 1 hour → expires at 3:00 PM.
+
+6️⃣ Sign the token
+---------------------------------------------------------------
+.signWith(key())
+---------------------------------------------------------------
+- Adds a “digital signature” (secret key) to protect token from changes.
+- Like stamping or sealing a document.
+
+7️⃣ Finish and return the token
+---------------------------------------------------------------
+.compact();
+---------------------------------------------------------------
+- Combines everything into a final string like:
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+═══════════════════════════════════════════════════════════════
+🏁 SIMPLE SUMMARY
+═══════════════════════════════════════════════════════════════
+This method:
+1️⃣ Takes the username
+2️⃣ Adds creation and expiry times
+3️⃣ Signs it securely
+4️⃣ Returns a final token string
+
+═══════════════════════════════════════════════════════════════
+🎟️ REAL-LIFE COMPARISON
+═══════════════════════════════════════════════════════════════
+Think of it as a movie ticket:
+
+| JWT Step | Real Life Meaning |
+|-----------|-------------------|
+| subject(userName) | Person’s name on ticket |
+| issuedAt() | When ticket was printed |
+| expiration() | When ticket expires |
+| signWith() | Theater’s stamp/signature |
+| compact() | Final printed ticket |
+
+═══════════════════════════════════════════════════════════════
+🧠 WHY NOT JUST USE (new Date().getTime() + jwtExpirationMs)?
+═══════════════════════════════════════════════════════════════
+
+Because `.expiration()` needs a **Date object**, not a **number**.
+
+---------------------------------------------------------------
+new Date().getTime()          ➡ gives milliseconds (a number)
+new Date(milliseconds)        ➡ gives a Date object
+---------------------------------------------------------------
+
+So we do:
+---------------------------------------------------------------
+new Date(new Date().getTime() + jwtExpirationMs)
+---------------------------------------------------------------
+✅ This converts milliseconds into a Date object, which works.
+
+Example:
+---------------------------------------------------------------
+current time = 1731252600000
+jwtExpirationMs = 3600000 (1 hour)
+---------------------------------------------------------------
+new Date(1731252600000 + 3600000)
+➡ new Date(1731256200000)
+➡ “Nov 10, 2025, 3:00 PM”
+
+═══════════════════════════════════════════════════════════════
+🏁 IN SIMPLE WORDS
+═══════════════════════════════════════════════════════════════
+> `.expiration()` can’t take a number — it must take a Date.
+> That’s why we wrap it inside `new Date(...)`.
+
+So:
+---------------------------------------------------------------
+✅ new Date(new Date().getTime() + jwtExpirationMs)   ✅ Works
+🚫 new Date().getTime() + jwtExpirationMs              ❌ Fails
+---------------------------------------------------------------
+
+═══════════════════════════════════════════════════════════════
+SUMMARY IN ONE LINE:
+"expiration" needs a Date object, not just time in milliseconds.
+═══════════════════════════════════════════════════════════════

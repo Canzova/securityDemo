@@ -10,7 +10,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -49,12 +50,12 @@ public class CustomSecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(){
         UserDetails user1 = User.withUsername("user1")
-                .password("{noop}password1")
+                .password(passwordEncoder().encode("password1"))
                 .roles("USER")
                 .build();
 
         UserDetails admin = User.withUsername("admin")
-                .password("{noop}password2")
+                .password(passwordEncoder().encode("password2"))
                 .roles("ADMIN")
                 .build();
 
@@ -68,4 +69,11 @@ public class CustomSecurityConfig {
 
         //return new InMemoryUserDetailsManager(user1, admin);
     }
+
+    @Bean
+    // PasswordEncoder is an interface and BCryptPasswordEncoder is an implementation of it which uses Salt
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
 }

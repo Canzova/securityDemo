@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════════
+💡 METHOD: getJwtFromHeader(HttpServletRequest request)
+═══════════════════════════════════════════════════════════════
+
+🎯 PURPOSE:
+Extract the JWT token from the request’s “Authorization” header.
+
+═══════════════════════════════════════════════════════════════
+🧩 STEP-BY-STEP EXPLANATION
+═══════════════════════════════════════════════════════════════
+
+1️⃣ Get the header value
+---------------------------------------------------------------
+String bearerToken = request.getHeader("Authorization");
+---------------------------------------------------------------
+- Reads the value of the “Authorization” header from the HTTP request.
+- Example header looks like:
+  "Authorization: Bearer <eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9>"
+
+2️⃣ Log the header for debugging
+---------------------------------------------------------------
+logger.debug("Authorization Header : {}", bearerToken);
+---------------------------------------------------------------
+- Prints the header value in logs (only if DEBUG logging is ON).
+- Helps developers see what’s coming in.
+
+3️⃣ Check if header has a token
+---------------------------------------------------------------
+if(bearerToken != null && bearerToken.startsWith("Bearer "))
+---------------------------------------------------------------
+- Makes sure the header exists and starts with the word “Bearer ”.
+
+4️⃣ Extract the token
+---------------------------------------------------------------
+return bearerToken.substring(7);
+---------------------------------------------------------------
+- Removes the word “Bearer ” (7 characters)
+  and returns only the actual JWT token.
+
+Example:
+---------------------------------------------------------------
+"Bearer abcd1234"  →  returns "<abcd1234>"
+
+5️⃣ If no valid header found
+---------------------------------------------------------------
+return null;
+---------------------------------------------------------------
+- Returns null when there’s no JWT token in the request.
+
+═══════════════════════════════════════════════════════════════
+🏁 SIMPLE SUMMARY
+═══════════════════════════════════════════════════════════════
+👉 Reads the “Authorization” header
+👉 Checks if it starts with “Bearer ”
+👉 Returns just the token part
+👉 Returns null if not found
+
+✅ In short:
+It extracts the JWT token cleanly from the request header.
+
+═══════════════════════════════════════════════════════════════

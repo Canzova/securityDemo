@@ -1,0 +1,27 @@
+═══════════════════════════════════════════════════════════════
+🌟 SPRING @Bean METHOD VISIBILITY EXPLAINED
+═══════════════════════════════════════════════════════════════
+
+📘 OVERVIEW
+------------
+In Spring, methods annotated with `@Bean` inside a `@Configuration` class
+define beans for the application context.
+But do these methods need to be `public`?
+Let’s find out 👇
+
+═══════════════════════════════════════════════════════════════
+🧩 DO @Bean METHODS NEED TO BE PUBLIC?
+═══════════════════════════════════════════════════════════════
+
+✅ Short Answer:
+No — they don’t *have* to be `public`.
+
+Spring will still detect and register them as beans
+even if they are **package-private** (no modifier) or **protected**.
+
+Example:
+```java
+@Bean
+PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}

@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════════════
+🔐 INTRODUCTION TO JWT (JSON WEB TOKEN)
+═══════════════════════════════════════════════════════════════
+
+📘 WHAT IS JWT?
+═══════════════════════════════════════════════════════════════
+JWT (JSON Web Token) is a **compact and secure way** to share information
+between two parties — usually a **client** (like a browser or mobile app)
+and a **server**.
+
+It’s basically a **string** that proves who you are once you log in.
+
+🧱 Example:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+(It looks messy — but it’s just encoded text.)
+
+═══════════════════════════════════════════════════════════════
+🧩 WHY JWT IS USED
+═══════════════════════════════════════════════════════════════
+JWT is mainly used for **authentication**.
+
+✅ Simple idea:
+1. You **log in** with username & password.
+2. The **server verifies** you and creates a **JWT token**.
+3. You **send that token** with every future request.
+4. The **server checks** the token — if valid, you’re allowed in.
+
+👉 No need to log in again or keep a session on the server.
+
+═══════════════════════════════════════════════════════════════
+🏗️ STRUCTURE OF A JWT
+═══════════════════════════════════════════════════════════════
+A JWT has **three parts**, separated by dots (`.`):
+
+HEADER . PAYLOAD . SIGNATURE
+
+🧱 Example:
+xxxxx.yyyyy.zzzzz
+
+1. **Header** → contains token type and algorithm info.
+2. **Payload** → contains user data (like ID, role, expiry).
+3. **Signature** → ensures the token hasn’t been tampered with.
+
+═══════════════════════════════════════════════════════════════
+⚡ ADVANTAGES OF JWT
+═══════════════════════════════════════════════════════════════
+✅ Stateless — no need for server sessions.
+✅ Fast — easy to include in HTTP headers.
+✅ Scalable — perfect for APIs and microservices.
+✅ Portable — works across web, mobile, and cloud systems.
+
+═══════════════════════════════════════════════════════════════
+⚠️ IMPORTANT SECURITY TIPS
+═══════════════════════════════════════════════════════════════
+❗ Don’t store sensitive info (like passwords) inside JWT.
+❗ Always use **HTTPS** to prevent token theft.
+❗ Tokens must **expire** after a short time.
+❗ Use **refresh tokens** to safely renew access tokens.
+
+═══════════════════════════════════════════════════════════════
+🏁 IN SIMPLE WORDS
+═══════════════════════════════════════════════════════════════
+👉 JWT is like a **digital ID card** given to you by the server
+after you log in — you show it each time to prove who you are.
+
+═══════════════════════════════════════════════════════════════
+You can add this dependency from official github page of JWT.
+Go to JWT github page ---> go to installation ---> Copy Maven dependency code

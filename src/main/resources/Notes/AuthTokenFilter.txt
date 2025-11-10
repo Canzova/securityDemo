@@ -1,0 +1,101 @@
+═══════════════════════════════════════════════════════════════
+📘 AUTH TOKEN FILTER (JWT) — SIMPLE EXPLANATION
+═══════════════════════════════════════════════════════════════
+
+🏁 WHAT THIS CLASS DOES
+───────────────────────
+✅ Runs once for every incoming HTTP request.
+✅ Looks for a JWT (token) in the "Authorization" header.
+✅ If the token is valid → extracts username → tells Spring Security "this request is from user X".
+✅ This way, controllers know who is making the request and what roles they have.
+
+───────────────────────────────────────────────────────────────
+⚙️ HIGH-LEVEL FLOW
+───────────────────────────────────────────────────────────────
+1️⃣ Request arrives at your API.
+2️⃣ Filter runs before the controller.
+3️⃣ Filter tries to find JWT in header.
+4️⃣ If token found → validates it → extracts username.
+5️⃣ Loads user details (like roles) from DB or memory.
+6️⃣ Creates Authentication object → sets it into SecurityContext.
+7️⃣ Passes request ahead in the chain.
+
+───────────────────────────────────────────────────────────────
+📄 LINE-BY-LINE SIMPLE EXPLANATION
+───────────────────────────────────────────────────────────────
+@Component → Spring should manage this class automatically.
+extends OncePerRequestFilter → Run once per request.
+
+@Autowired JwtUtils → Helper that deals with JWT.
+@Autowired UserDetailsService → Used to load user info.
+
+doFilterInternal(...) → Main method executed for each request.
+
+parseJwt(request) → Reads the token from the “Authorization” header.
+validateJwtToken(jwtToken) → Checks if token is valid & not expired.
+getUserNameFromToken(jwtToken) → Gets username from inside token.
+
+UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+→ Loads full user info (roles, etc.) from DB.
+
+UsernamePasswordAuthenticationToken → Represents the authenticated user.
+
+authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+→ Adds extra info (like IP) to authentication.
+
+SecurityContextHolder.getContext().setAuthentication(authentication);
+→ Stores this user info so Spring Security knows the user is authenticated.
+
+filterChain.doFilter(request, response);
+→ Lets request continue normally to the controller.
+
+───────────────────────────────────────────────────────────────
+🔑 MAIN CONCEPTS (SUPER SIMPLE)
+───────────────────────────────────────────────────────────────
+🧱 FilterChain → Series of security checkpoints for requests.
+🔁 OncePerRequestFilter → Ensures filter runs only once per request.
+📩 HttpServletRequest → Incoming request from user.
+📤 HttpServletResponse → What we send back.
+🎟️ JWT → Token (like a digital ticket) with username + signature.
+🧩 JwtUtils → Reads, validates, and extracts data from JWT.
+👤 UserDetailsService → Loads user information (username, roles).
+🔐 UsernamePasswordAuthenticationToken → Represents a logged-in user.
+📦 SecurityContextHolder → Stores current logged-in user info.
+🧭 WebAuthenticationDetailsSource → Adds details (like IP) to Authentication.
+
+───────────────────────────────────────────────────────────────
+💬 SIMPLE ANALOGY
+───────────────────────────────────────────────────────────────
+Imagine a movie theater 🎬:
+🎟️ The JWT is your ticket.
+👮 The filter (AuthTokenFilter) is the gatekeeper.
+✅ The filter checks if the ticket is real and who it belongs to.
+👤 If valid, it tells the system “this person is allowed in”.
+🚪 Then the person (request) is allowed to enter (controller).
+
+───────────────────────────────────────────────────────────────
+💡 WHY THIS IS IMPORTANT
+───────────────────────────────────────────────────────────────
+✔ Without this filter → JWTs would be ignored, and all requests would seem anonymous.
+✔ With it → valid tokens become authenticated users.
+✔ This enables role-based access like `@PreAuthorize("hasRole('ADMIN')")`.
+
+───────────────────────────────────────────────────────────────
+⚠️ ERROR HANDLING BEHAVIOR
+───────────────────────────────────────────────────────────────
+- Token missing → request continues as anonymous.
+- Token invalid/expired → rejected, user remains unauthenticated.
+- Token valid → user authenticated and stored in SecurityContext.
+
+───────────────────────────────────────────────────────────────
+🧾 FINAL CHEAT SHEET (QUICK LOOK)
+───────────────────────────────────────────────────────────────
+@Component → Register as Spring Bean
+OncePerRequestFilter → Run once for every HTTP request
+JwtUtils → Token helper (extract + validate)
+UserDetailsService → Load user details
+UsernamePasswordAuthenticationToken → Create authenticated user
+SecurityContextHolder → Store user authentication
+filterChain.doFilter() → Continue request
+
+═══════════════════════════════════════════════════════════════

@@ -1,0 +1,94 @@
+═══════════════════════════════════════════════════════════════
+💡 METHOD: key()
+═══════════════════════════════════════════════════════════════
+
+📘 Purpose:
+---------------------------------------------------------------
+To create and return a **secret key** that will be used
+to **sign** (lock) and **verify** (unlock) JWT tokens.
+
+═══════════════════════════════════════════════════════════════
+🧩 CODE
+---------------------------------------------------------------
+public Key key(){
+    return Keys.hmacShaKeyFor(
+        Decoders.BASE64.decode(jwtSecret)
+    );
+}
+═══════════════════════════════════════════════════════════════
+
+🧠 STEP-BY-STEP EXPLANATION
+═══════════════════════════════════════════════════════════════
+
+1️⃣ `jwtSecret`
+---------------------------------------------------------------
+- This is your **secret key** stored as text (usually in application.properties).
+- Example:
+  jwt.secret = "bXlzZWNyZXRrZXlmb3Jqd3R0ZXN0aW5nMTIz"
+
+💬 It’s stored in **Base64 encoded format** (kind of scrambled text for safety).
+
+---
+
+2️⃣ `Decoders.BASE64.decode(jwtSecret)`
+---------------------------------------------------------------
+- This **decodes** the Base64 text back into its original byte form.
+- Example:
+  "bXlzZWNyZXRrZXlmb3Jqd3R0ZXN0aW5nMTIz"
+   → becomes → [109, 121, 115, 101, 99, 114, 101, 116, ...]
+
+💬 Think of it like “unscrambling” the secret text into raw data the computer understands.
+
+---
+
+3️⃣ `Keys.hmacShaKeyFor(...)`
+---------------------------------------------------------------
+- This creates a **cryptographic key** using the decoded bytes.
+- HMAC-SHA means it’s using a secure hashing algorithm (SHA-256).
+✅ hmacShaKeyFor → to make a usable key object for signing (SHA-256).
+✅ When signing JWT → SHA-256 algorithm uses that key to create the token’s signature.
+
+💬 Think of it like creating a **special digital key** 🔑
+that can:
+- **Sign** tokens (lock them securely)
+- **Verify** tokens (check if they’re real)
+
+---
+
+4️⃣ `return` statement
+---------------------------------------------------------------
+- Returns the created `Key` object.
+- This `Key` is later used in methods like:
+  - `.signWith(key())` → when creating a token
+  - `.verifyWith(key())` → when verifying a token
+
+═══════════════════════════════════════════════════════════════
+🎯 IN SIMPLE WORDS
+═══════════════════════════════════════════════════════════════
+This method:
+1️⃣ Takes your secret text (`jwtSecret`)
+2️⃣ Decodes it from Base64
+3️⃣ Turns it into a secure key object
+4️⃣ Returns it for signing/verifying JWT tokens
+
+✅ In short:
+> It builds the secret digital key your app uses to protect JWT tokens.
+
+═══════════════════════════════════════════════════════════════
+🧩 REAL-LIFE EXAMPLE
+═══════════════════════════════════════════════════════════════
+Imagine you keep a password “mysecretkey123” 🔐
+You store it safely in Base64 so it looks scrambled:
+→ "bXlzZWNyZXRrZXkxMjM="
+
+This method:
+- Decodes that scrambled text
+- Turns it into a usable secret key
+- Gives it to JWT functions to lock/unlock your tokens
+
+═══════════════════════════════════════════════════════════════
+🏁 ONE-LINE SUMMARY
+═══════════════════════════════════════════════════════════════
+👉 `key()` creates a secure digital key from your Base64 secret,
+used to sign and verify JWT tokens safely.
+═══════════════════════════════════════════════════════════════

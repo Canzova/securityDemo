@@ -1,0 +1,76 @@
+═══════════════════════════════════════════════════════════════
+💡 METHOD: getUserNameFromToken(String token)
+═══════════════════════════════════════════════════════════════
+
+📌 Purpose
+---------------------------------------------------------------
+Return the username (the "subject") stored inside a JWT token,
+after verifying the token’s signature.
+
+Code:
+---------------------------------------------------------------
+public String getUserNameFromToken(String token){
+    return Jwts.parser()
+            .verifyWith(key())
+            .build().parseSignedClaims(token)
+            .getPayload().getSubject();
+}
+---------------------------------------------------------------
+
+🧩 Step-by-step (simple)
+═══════════════════════════════════════════════════════════════
+
+1️⃣ `Jwts.parser()`
+   - Starts a process that will **read and check** the token.
+   - Think: “I want to *parse* (read) a token now.”
+
+2️⃣ `.verifyWith(key())`
+   - Tells the parser which **secret key** to use to check the token’s signature.
+   - Think: “Use this secret to check if the token is genuine (not tampered).”
+
+3️⃣ `.build()`
+   - Finalizes the parser setup so it’s ready to parse tokens.
+   - Think: “Okay, parser is ready.”
+
+4️⃣ `.parseSignedClaims(token)`
+   - **Parses** the token text and **verifies** the signature with the key.
+   - If the token was changed or signed with a different key, this step will fail (throws an error).
+   - After success, it gives you the token’s contents (header + payload).
+
+5️⃣ `.getPayload().getSubject()`
+   - `getPayload()` gives the token’s **payload** (the claims / data inside the token).
+   - `getSubject()` extracts the **subject** field — usually the username or user id.
+   - That final value (a String) is returned by the method.
+
+═══════════════════════════════════════════════════════════════
+🔒 In plain English
+---------------------------------------------------------------
+1. Take the token string you received.
+2. Check its signature using your secret key (to ensure it wasn't changed).
+3. If signature is valid, read the token’s data.
+4. Return the "subject" value — the username.
+
+═══════════════════════════════════════════════════════════════
+⚠️ Important notes (keep in mind)
+---------------------------------------------------------------
+• If the token is invalid, expired, or tampered with, parsing will throw an exception — handle it.
+• The parser both **verifies** and **reads** the token; it does not just read untrusted data.
+• The "subject" is a standard JWT claim used to store who the token is for (username/user id).
+
+═══════════════════════════════════════════════════════════════
+✅ Example result
+---------------------------------------------------------------
+Token payload (example):
+{
+  "sub": "alice",
+  "iat": 1690...,
+  "exp": 1690...
+}
+
+`getSubject()` returns: "alice"
+
+═══════════════════════════════════════════════════════════════
+🏁 One-line summary
+---------------------------------------------------------------
+The method verifies the token with your key, reads the token’s payload, and returns the username stored in the `sub` (subject) claim.
+═══════════════════════════════════════════════════════════════
