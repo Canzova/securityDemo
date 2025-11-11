@@ -2,6 +2,26 @@
 📘 AUTH TOKEN FILTER (JWT) — SIMPLE EXPLANATION
 ═══════════════════════════════════════════════════════════════
 
+Why important ?
+
+🧩 The Big Picture
+
+Spring Security can’t automatically handle JWT out of the box.
+Why? Because JWT is stateless — Spring has no way to know who’s logged in just from a random HTTP header.
+
+That’s exactly why we need your class 👇
+
+@Component
+public class AuthTokenFilter extends OncePerRequestFilter
+
+
+This filter is the bridge between:
+🧱 The raw HTTP request (with a JWT in the header), and
+🔐 Spring Security’s internal authentication system.
+
+Without it, Spring would never know:
+“Hey, this incoming request already has a valid JWT — trust it and set this user as authenticated.”
+
 🏁 WHAT THIS CLASS DOES
 ───────────────────────
 ✅ Runs once for every incoming HTTP request.
@@ -44,9 +64,16 @@ authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(requ
 → Adds extra info (like IP) to authentication.
 
 SecurityContextHolder.getContext().setAuthentication(authentication);
-→ Stores this user info so Spring Security knows the user is authenticated.
+→ Stores this user info into spring security context, so Spring Security knows the user is authenticated.
 
 filterChain.doFilter(request, response);
+It says :
+“Now that this filter’s job is done (or partially done), pass the request and response down the filter chain to
+the next filter or the servlet.”
+
+So, when you call filterChain.doFilter(), control moves to the next filter in the chain.
+If there are no more filters left, it eventually reaches your servlet (controller endpoint).
+
 → Lets request continue normally to the controller.
 
 ───────────────────────────────────────────────────────────────

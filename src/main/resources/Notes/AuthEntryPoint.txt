@@ -1,0 +1,193 @@
+=====================================================================
+🧩  AUTHENTRYPOINTJWT EXPLAINED — SIMPLE & CLEAR GUIDE
+=====================================================================
+
+
+🎯 WHAT THIS CLASS DOES
+---------------------------------------------------------------------
+Think of your API like a locked door 🚪.
+Only users with the correct key (valid credentials or JWT token) 🔑
+can enter.
+
+If someone tries to enter without a key or with a fake one ❌:
+👉 Spring Security stops them and calls this class (AuthEntryPointJwt)
+to say: “Unauthorized! You don’t have permission to access this.”
+
+This class decides *how* that error message looks
+(we make it return a clean JSON message instead of an HTML page).
+
+
+⚙️ WHEN IT IS TRIGGERED
+---------------------------------------------------------------------
+This class runs automatically whenever an unauthenticated user
+tries to access a protected endpoint.
+
+Examples:
+1️⃣ User requests /api/profile without logging in
+2️⃣ User sends wrong username/password
+3️⃣ User sends invalid or expired JWT token
+
+Spring Security then calls:
+➡️  AuthEntryPointJwt.commence(request, response, exception)
+
+
+🧠 STEP-BY-STEP CODE EXPLANATION
+---------------------------------------------------------------------
+
+1️⃣ Implements AuthenticationEntryPoint
+    - This interface defines what happens when authentication fails.
+
+2️⃣ Logs the error
+    logger.error("Unauthorized Error : {}", authException.getMessage());
+
+    🧾 Example log:
+    Unauthorized Error : Full authentication is required to access this resource
+
+3️⃣ Sets response type and status
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+    ✳️ Tells the client:
+        - “I am sending a JSON response, not HTML” You are not converting the response in to a .json file,
+        you are just telling client than i am sending a json response.
+        - HTTP status code = 401 (Unauthorized)
+
+4️⃣ Creates the response body
+    final Map<String, Object> body = new HashMap<>();
+    body.put("status", 401);
+    body.put("error", "Unauthorized");
+    body.put("message", authException.getMessage());
+    body.put("path", request.getServletPath());
+
+    📦 This builds a JSON structure with useful error details.
+
+    💡 Why final?
+
+    final means you can’t reassign the variable body to point to another object —
+    but you can still modify the contents inside the HashMap.
+
+    So this is okay:
+    body.put("error", "something");
+
+    But this is not okay:
+    body = new HashMap<>(); // ❌ can't reassign final variable
+
+5️⃣ Writes the JSON to the response
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(response.getOutputStream(), body);
+
+    🧩 Converts the Map into JSON and sends it as the HTTP response.
+    - ObjectMapper is from the Jackson library.
+    - It converts Java objects (like your Map) into JSON text.
+    - response.getOutputStream() means: write that JSON directly into the HTTP response body.
+
+
+💡 FINAL JSON OUTPUT EXAMPLE
+---------------------------------------------------------------------
+{
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Invalid or missing token",
+  "path": "/api/secure"
+}
+
+
+✅ SUMMARY TABLE
+---------------------------------------------------------------------
+| Step | Purpose                          | Example / Meaning                  |
+|------|----------------------------------|------------------------------------|
+| 1️⃣ | Logs unauthorized access          | "Unauthorized Error: Invalid JWT"  |
+| 2️⃣ | Sets JSON content type            | Client parses JSON properly        |
+| 3️⃣ | Sends 401 status code             | Informs client unauthorized        |
+| 4️⃣ | Builds JSON body                  | {status, error, message, path}     |
+| 5️⃣ | Writes JSON to output stream      | Client receives formatted JSON     |
+
+
+🧠 WORKS FOR MORE THAN JUST JWT
+---------------------------------------------------------------------
+Even though it’s called "AuthEntryPointJwt",
+it handles *any* unauthorized access — not just token issues.
+
+Triggered for:
+- ❌ Invalid username/password
+- ❌ Missing authentication
+- ❌ Invalid / expired JWT token
+
+💬 The name “Jwt” is just a convention.
+You can rename it to `CustomAuthEntryPoint` — it’ll still work the same.
+
+
+🧩 WHY WE USE response.setContentType(MediaType.APPLICATION_JSON_VALUE)
+---------------------------------------------------------------------
+This tells the client:
+> “The response body I’m sending is JSON.”
+
+When you later write:
+mapper.writeValue(response.getOutputStream(), body);
+
+…the client (browser, Postman, React app, etc.) knows to treat it as JSON.
+
+Without this line, clients might see plain text or HTML instead.
+
+✅ So it’s NOT unused — it sets the `Content-Type: application/json` header.
+
+
+📘 COMPLETE REQUEST FLOW
+---------------------------------------------------------------------
+1️⃣ User tries to access `/api/private`
+2️⃣ Spring Security checks for authentication
+3️⃣ Authentication fails (no login or bad token)
+4️⃣ Spring calls `AuthEntryPointJwt.commence()`
+5️⃣ JSON error message with HTTP 401 is sent
+6️⃣ Request stops — controller is never called
+
+
+📦 SAMPLE JSON RESPONSE
+---------------------------------------------------------------------
+{
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Full authentication is required to access this resource",
+  "path": "/api/private"
+}
+
+
+🧾 FINAL RECAP
+---------------------------------------------------------------------
+✔ Handles ALL unauthorized access (JWT or username/password)
+✔ Converts response to JSON format (API-friendly)
+✔ Sends clear 401 Unauthorized message
+✔ Used automatically by Spring Security
+✔ `setContentType()` sets HTTP header for JSON
+
+
+📊 SIMPLE VISUAL FLOW (TEXT DIAGRAM)
+---------------------------------------------------------------------
+    CLIENT REQUEST
+          │
+          ▼
+  🔒 Spring Security Filter Chain
+          │
+          ▼
+  ✅ Authenticated? ──────────────► Yes → Controller executes
+          │
+          ▼
+         ❌ No
+          │
+          ▼
+  🚨 AuthEntryPointJwt.commence()
+          │
+          ▼
+  📨 Sends JSON:
+      {
+        "status": 401,
+        "error": "Unauthorized"
+      }
+          │
+          ▼
+     🚫 Request ends here
+
+
+=====================================================================
+🏁 END OF EXPLANATION
+=====================================================================

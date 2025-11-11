@@ -5,7 +5,8 @@
 🧩 1. What It Is
 @EnableWebSecurity is a Spring annotation that tells Spring Boot:
 
-👉 “Hey, turn on Spring Security for this web application and let me customize it.”
+👉 “Hey, turn on Spring Security for this web application and let me customize it., without this as well you have
+basic security features, but inorder to customize it you need this.”
 
 ──────────────────────────────────────────────
 
