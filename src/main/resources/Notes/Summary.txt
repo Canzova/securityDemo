@@ -1,0 +1,14 @@
+[Client] -- username+password --> [Server verifies DB]
+                  |
+                  v
+        [Server creates JWT signed with secret]
+                  |
+                  v
+         [Client stores token locally]
+
+Next request:
+[Client] -- sends token in header -->
+     [Server verifies signature + expiry]
+                  |
+                  v
+          [If valid → grant access]

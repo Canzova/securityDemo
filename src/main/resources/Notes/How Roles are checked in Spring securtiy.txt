@@ -1,0 +1,269 @@
+═══════════════════════════════════════════════════════════════
+💡 TOPIC: How Spring Security + JWT Checks Roles
+═══════════════════════════════════════════════════════════════
+
+## STEP 1 — User sends request with JWT
+
+GET /api/admin/some-data
+Authorization: Bearer <JWT>
+
+AuthTokenFilter:
+
+* extracts username
+* extracts roles (ROLE_USER, ROLE_ADMIN...)
+* validates JWT
+* loads user
+* creates Authentication object
+* saves it into SecurityContext
+
+Example Authentication data:
+
+username = john
+roles = [ROLE_ADMIN]
+
+## STEP 2 — Spring Security checks roles BEFORE controller
+
+Spring checks:
+
+* What does the endpoint require?
+* What roles does user have?
+
+## Example with antMatchers:
+
+.requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+Spring internally checks:
+Does Authentication.authorities contain "ROLE_ADMIN"?
+
+## Example with @PreAuthorize:
+
+@PreAuthorize("hasRole('USER')")
+
+Spring checks:
+Does Authentication.authorities contain "ROLE_USER"?
+
+If yes → method runs
+If no → 403 Forbidden
+
+## STEP 3 — Spring’s Role Decision Manager
+
+Spring uses:
+
+* AccessDecisionManager
+* RoleVoter
+* PreInvocationAuthorizationAdvice
+
+These compare:
+REQUIRED_ROLES vs USER_ROLES
+
+## WHERE DO ROLES COME FROM?
+
+From the JWT token.
+
+Flow:
+
+1. User logs in
+2. Server loads roles and puts them into JWT claims
+3. On every request:
+
+   * JWT filter extracts roles
+   * Puts them into Authentication object
+4. Spring uses that to allow/deny access
+
+## 🏁 FINAL SIMPLE SUMMARY
+
+✔ JWT filter validates token
+✔ Extracts roles
+✔ Puts Authentication into SecurityContext
+✔ Spring checks roles before calling controller
+✔ If using @PreAuthorize("hasRole('ADMIN')"):
+Spring compares required role with roles from JWT
+
+If match → request allowed
+If not → 403 Forbidden
+
+═══════════════════════════════════════════════════════════════
+END OF TXT
+═══════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════
+💡 TOPIC: Why AuthTokenFilter Runs Every Time (JWT is Stateless)
+═══════════════════════════════════════════════════════════════
+
+## 🔥 DOES AuthTokenFilter RUN ON EVERY REQUEST?
+
+Yes.
+
+Every single request goes like this:
+
+1. Request comes with JWT
+2. AuthTokenFilter runs
+3. Token is validated
+4. User details and roles are extracted
+5. A new Authentication object is created
+6. That Authentication is placed into SecurityContext
+7. Controller is called
+
+This happens on EVERY request, not just once.
+
+## 🔥 WHY IS THIS NECESSARY AND NOT REDUNDANT?
+
+Because JWT is stateless.
+
+Meaning:
+
+* No session stored on server
+* No user login data stored on server
+* Server does not “remember” past requests
+* Server only trusts the JWT sent by client each time
+
+So to authenticate a user:
+
+✔ The server must verify the token again
+✔ The server must rebuild the Authentication object again
+✔ The server must put it into Spring Security context again
+
+EVERY TIME.
+
+## 🔥 WHY NOT USE THE SAME AUTH OBJECT FROM LAST REQUEST?
+
+Because HTTP is stateless.
+
+Each request is completely separate from previous ones.
+
+There is no memory between requests unless you store session data.
+
+JWT = NO SERVER SESSION
+
+So the server must re-authenticate using the token every time.
+
+## 🔥 WHAT IF WE DID NOT REBUILD Authentication EVERY TIME?
+
+Then the server wouldn’t know:
+
+* who the user is
+* what roles they have
+* whether the token is expired
+* whether token was modified
+* whether the user was banned since last request
+
+Without rebuilding Authentication:
+
+Spring Security would think the user is anonymous.
+
+## 🔥 SIMPLE ANALOGY
+
+Think of JWT like a movie ticket.
+
+Every time you enter the theater:
+
+* You must show the ticket again
+* The theater staff checks it again
+* They don’t store your identity from previous visit
+
+Same with token:
+Every request = show ticket again.
+
+## 🏁 FINAL SIMPLE SUMMARY
+
+✔ Yes — AuthTokenFilter runs EVERY time
+✔ Yes — Authentication object is created EVERY time
+✔ No — it is NOT redundant
+✔ This is REQUIRED because JWT authentication is stateless
+✔ Server does NOT keep any stored session of the user
+✔ Token must be verified on EVERY request
+✔ Authentication must be recreated on EVERY request
+
+═══════════════════════════════════════════════════════════════
+💡 TOPIC: Does Spring SecurityContext store user info between requests?
+═══════════════════════════════════════════════════════════════
+
+## SHORT ANSWER
+
+Correct — Spring Security does NOT keep user info between requests when using JWT.
+
+═══════════════════════════════════════════════════════════════
+🧩 HOW IT WORKS WITH JWT (STEP-BY-STEP)
+═══════════════════════════════════════════════════════════════
+
+## 1️⃣ Request arrives
+
+SecurityContext is empty.
+
+## 2️⃣ JWT filter validates the token
+
+* Creates a new Authentication object
+* Puts it into SecurityContext
+
+## 3️⃣ Controller executes
+
+SecurityContext now contains the user.
+
+## 4️⃣ Request ends
+
+Spring automatically clears SecurityContext
+(for security reasons).
+
+## 5️⃣ Next request arrives
+
+SecurityContext is EMPTY again.
+JWT filter must rebuild Authentication again.
+
+═══════════════════════════════════════════════════════════════
+🔥 WHY SECURITYCONTEXT IS NOT PERSISTED?
+═══════════════════════════════════════════════════════════════
+
+Because JWT authentication is stateless:
+
+* No HTTP session
+* No memory of previous requests
+* Server trusts ONLY the JWT that the client sends each time
+
+So each request gets a **fresh SecurityContext**.
+
+═══════════════════════════════════════════════════════════════
+🎯 SIMPLE ANALOGY
+═══════════════════════════════════════════════════════════════
+
+SecurityContext = a whiteboard.
+
+* Start of request → whiteboard is blank
+* JWT filter writes user info on it
+* After request → Spring erases the board
+* Next request → blank again
+
+═══════════════════════════════════════════════════════════════
+🆚 SESSION-BASED LOGIN (FOR COMPARISON)
+═══════════════════════════════════════════════════════════════
+
+If you used formLogin() with sessions:
+
+* SecurityContext **would** be stored in the HTTP session
+* You would stay logged in
+* No need to rebuild Authentication on every request
+
+But with JWT:
+
+✔ No session
+✔ No stored SecurityContext
+✔ Must rebuild Authentication **every** request
+
+═══════════════════════════════════════════════════════════════
+🏁 FINAL SUMMARY
+═══════════════════════════════════════════════════════════════
+
+Yes — Spring SecurityContext does NOT store user info after each request when using JWT.
+
+This is expected because JWT is stateless.
+Every new request must:
+
+1. Send JWT
+2. Validate JWT
+3. Recreate Authentication
+4. Refill SecurityContext
+
+═══════════════════════════════════════════════════════════════
+END OF TXT
+═══════════════════════════════════════════════════════════════
+

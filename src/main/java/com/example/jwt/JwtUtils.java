@@ -1,6 +1,9 @@
 package com.example.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +25,7 @@ public class JwtUtils {
 
     // JWT expiration time in milli seconds
     @Value("${spring.app.jwtExpirationMs}")
-    private int jwtExpirationMs;
+    private long jwtExpirationMs;
 
     @Value("${spring.app.jwtSecret}")
     private String jwtSecret;
@@ -58,24 +61,31 @@ public class JwtUtils {
 
     // Getting Signing key
     public Key key(){
-        return Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode(jwtSecret)
-        );
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+
     }
 
     // Validate JWT token
-    public boolean validateJwtToken(String authToken){
-        try{
-            System.out.println("Validate");
+    public boolean validateJwtToken(String authToken) {
+        try {
+            logger.debug("Validating token: {}", authToken);
             Jwts.parser()
                     .verifyWith((SecretKey) key())
                     .build()
                     .parseSignedClaims(authToken);
-
             return true;
-        } catch (Exception exception){
-            logger.error("Error is : {}", exception.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT expired: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Malformed JWT: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("Unsupported JWT: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims empty: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("JWT validation failed: {}", e.getMessage());
         }
         return false;
     }
+
 }

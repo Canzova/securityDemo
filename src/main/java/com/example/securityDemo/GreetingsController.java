@@ -49,7 +49,8 @@ public class GreetingsController {
 
     @PostMapping("/signin")
     public ResponseEntity<?>authenticateUser(@RequestBody LoginRequest loginRequest){
-        Authentication authentication;  // It represents an authenticated user object
+        Authentication authentication;  // It represents an authenticated or logged in user object, it has user info like userName,
+        // password, roles etc
 
         try{
             // AuthenticationManager is a build in class which can authenticate user, it takes userName and password
